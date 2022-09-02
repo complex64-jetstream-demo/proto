@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package test;
+option go_package = "github.com/complex64-jetstream-demo/testpb;testpb";
+
+service WorkerService {
+}
