@@ -1,7 +1,121 @@
 syntax = "proto3";
+import "google/protobuf/timestamp.proto";
 
 package test.v1;
 option go_package = "github.com/complex64-jetstream-demo/testpb;testpb";
 
 service WorkerService {
+  rpc RunSingleSequentialProducer(RunSingleSequentialProducerRequest) returns (stream RunSingleSequentialProducerResponse) {}
+  rpc RunSingleSequentialConsumer(RunSingleSequentialConsumerRequest) returns (stream RunSingleSequentialConsumerResponse) {}
+  rpc RunSingleFixedRateSequentialProducer(RunSingleFixedRateSequentialProducerRequest) returns (stream RunSingleFixedRateSequentialProducerResponse) {}
+}
+
+message SequentialMessage {
+  // 1, 2, 3, ...
+  int64 id = 1;
+
+  // To determine end-to-end latency. Relative to the test starting time.
+  google.protobuf.Timestamp created = 2;
+
+  // Any additional payload to send for targeted
+  bytes payload = 3;
+}
+
+message Target {
+  // Address of the NATS/JetStream servers.
+  string addr = 1;
+
+  // Subject or topic messages should go to.
+  string subject = 2;
+}
+
+message SimpleNanoHistogram {
+  // 99%-th percentile.
+  int64 nanos_50th = 1;
+  int64 count_50th = 2;
+
+  // 99%-th percentile.
+  int64 nanos_90th = 3;
+  int64 count_90th = 4;
+
+  // 99%-th percentile.
+  int64 nanos_95th = 5;
+  int64 count_95th = 6;
+
+  // 99%-th percentile.
+  int64 nanos_99th = 7;
+  int64 count_99th = 9;
+}
+
+message ProducerStatistics {
+  // Total messages sent successfully.
+  int64 sent = 1;
+
+  // Total errors returned from send calls.
+  int64 errors = 2;
+
+  // Latency for the send calls.
+  SimpleNanoHistogram latency = 3;
+
+  // Creation time; allows for rate calculation.
+  google.protobuf.Timestamp created = 4;
+}
+
+message ConsumerStatistics {
+  // Total messages received successfully.
+  int64 received = 1;
+
+  // Total errors returned from receive calls.
+  int64 errors = 2;
+
+  // Messages missing so far, decreases over time.
+  int64 missing = 3;
+
+  // Latency for the receive calls.
+  SimpleNanoHistogram receive_latency = 4;
+
+  // End to end latency based on the timestamp in the messages.
+  SimpleNanoHistogram end_to_end = 5;
+
+  // Creation time; allows for rate calculation.
+  google.protobuf.Timestamp created = 6;
+}
+
+message RunSingleSequentialProducerRequest {
+  // Where to send messages.
+  Target target = 1;
+
+  // How many to send, as fast as possible.
+  int64 count = 2;
+  // How many extra bytes to send.
+  int64 bytes = 3;
+  // When the test was started; shared "clock".
+  google.protobuf.Timestamp started = 4;
+}
+
+message RunSingleSequentialProducerResponse {
+  ProducerStatistics stats = 1;
+}
+
+message RunSingleSequentialConsumerRequest {
+  // Where to request messages from.
+  Target target = 1;
+  // How many messages to expect.
+  int64 count = 2;
+  // When the test was started; shared "clock".
+  google.protobuf.Timestamp started = 3;
+}
+
+message RunSingleSequentialConsumerResponse {
+  ConsumerStatistics stats = 1;
+}
+
+message RunSingleFixedRateSequentialProducerRequest {
+  RunSingleSequentialProducerRequest args = 1;
+  // Target rate in messages/s.
+  int64 rate = 3;
+}
+
+message RunSingleFixedRateSequentialProducerResponse {
+  ProducerStatistics stats = 1;
 }
