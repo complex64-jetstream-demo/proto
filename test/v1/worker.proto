@@ -2,7 +2,6 @@ syntax = "proto3";
 import "google/protobuf/timestamp.proto";
 
 package test.v1;
-option go_package = "github.com/complex64-jetstream-demo/testpb;testpb";
 
 service WorkerService {
   rpc RunSingleSequentialProducer(RunSingleSequentialProducerRequest) returns (stream RunSingleSequentialProducerResponse) {}
