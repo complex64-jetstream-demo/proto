@@ -6,5 +6,3 @@ breaking:
 lint:
   use:
     - DEFAULT
-  except:
-    -
