@@ -3,8 +3,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - "**.proto"
 jobs:
   push:
     concurrency: ci-${{ github.ref }}
