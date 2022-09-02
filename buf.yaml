@@ -1,4 +1,5 @@
 version: v1
+name: buf.build/complex64-jetstream-demo/proto
 breaking:
   use:
     - FILE
